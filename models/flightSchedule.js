@@ -11,7 +11,7 @@ const flightSchema = mongoose.Schema({
         type : Date,
         default : new Date()
     },
-    "expireAt": Date,
+    expireAt: Date
 });
 
 
