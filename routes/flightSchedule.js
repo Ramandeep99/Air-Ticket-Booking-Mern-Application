@@ -1,6 +1,6 @@
 import express from "express";
 import currentUser from '../middleware/userVerification.js'
-import { getflights , addflight } from "../controllers/flightControllers.js";
+import { getflights , addflight ,editflight , deleteflight} from "../controllers/flightControllers.js";
 
 const flight_router = express();
 
@@ -8,18 +8,8 @@ flight_router.get('/getflight' ,currentUser, getflights);
 
 flight_router.post('/addflight' ,currentUser, addflight);
 
-// router.get('/login' , adminLoginGet);
+flight_router.put('/editflight/:id' ,currentUser, editflight);
 
-// router.get('/register' , adminRegisterGet);
-
-// router.post('/register' , adminRegisterPost);
-
-// router.post('/login' , adminLoginPost);
-
-// router.get("/" ,currentUser, userController);
-
-// router.get("/logout" ,currentUser, logout_get);
-
-// router.get("/usercheck" ,currentUser, usercheck);
+flight_router.get('/deleteflight/:id' ,currentUser, deleteflight);
 
 export default flight_router;

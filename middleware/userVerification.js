@@ -1,16 +1,17 @@
 import jwt from 'jsonwebtoken';
 import adminData from '../models/adminModel.js';
+import userData from '../models/userModel.js';
 
-const requireAuth =  (req,res,next) =>{
+const requireAuth = (req, res, next) => {
     const token = req.cookies.jwtoken;
     // console.log(token);
-    if(token){
-        jwt.verify(token , process.env.SECRETKEY , async (err , decodedToken) => {
-            if (err){
+    if (token) {
+        jwt.verify(token, process.env.SECRETKEY, async (err, decodedToken) => {
+            if (err) {
                 // console.log(err)
                 res.redirect('/admin/login');
             }
-            else{
+            else {
 
                 const user = await adminData.findById(decodedToken._id)
                 req.user = user;
@@ -19,7 +20,7 @@ const requireAuth =  (req,res,next) =>{
             }
         })
     }
-    else{
+    else {
         // console.log(err)
         res.redirect('/admin/login');
     }
@@ -29,19 +30,19 @@ const requireAuth =  (req,res,next) =>{
 
 
 
-const currentUser = (req,res,next) =>{
+const currentUser = (req, res, next) => {
     const token = req.cookies.jwtoken;
-    
+
     req.token = token;
-    if(token){
-        jwt.verify(token , process.env.SECRETKEY , async (err , decodedToken) => {
-            if (err){
+    if (token) {
+        jwt.verify(token, process.env.SECRETKEY, async (err, decodedToken) => {
+            if (err) {
                 console.log(err)
-                res.user = null; 
+                res.user = null;
                 // res.redirect('/admin/login'); 
                 next();
             }
-            else{
+            else {
 
                 // const userName = async (req,res) =>{
                 //     const name =  await Details.findOne({_id:decodedToken._id});
@@ -50,39 +51,43 @@ const currentUser = (req,res,next) =>{
                 // userName();
                 const user = await adminData.findById(decodedToken._id)
                 req.user = user;
-                
+                if (req.user === null) {
+                    const user = await userData.findById(decodedToken._id)
+                    req.user = user;
+                }
+
                 next();
             }
         })
     }
-    else{
+    else {
         // console.log(err)
         // res.redirect('/admin/login'); 
-        req.user = null; 
+        req.user = null;
         next();
     }
 }
 
 
-const userName = (req,res,next) =>{
+const userName = (req, res, next) => {
     const token = req.cookies.jwtoken;
     // console.log(token);
-    if(token){
-        jwt.verify(token , process.env.SECRETKEY ,async  (err , decodedToken) => {
-            if (err){
+    if (token) {
+        jwt.verify(token, process.env.SECRETKEY, async (err, decodedToken) => {
+            if (err) {
                 // console.log(err)
-                res.redirect('/admin/login'); 
+                res.redirect('/admin/login');
             }
-            else{
+            else {
 
-                const name =  await adminData.findOne({_id:decodedToken._id});
+                const name = await adminData.findOne({ _id: decodedToken._id });
                 // console.log(name.name);
 
-                next();   
+                next();
             }
         })
     }
-    else{
+    else {
         // console.log(err)
         res.redirect('/admin/login');
     }

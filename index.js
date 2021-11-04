@@ -5,10 +5,9 @@ import path from "path";
 import dotenv from 'dotenv'
 const port = process.env.PORT || 2000;
 import adminRouter from './routes/adminRoutes.js'
-import adminData from "./models/adminModel.js";
 import cookieParser from "cookie-parser";
-import currentUser from "./middleware/userVerification.js";
 import flight_router from "./routes/flightSchedule.js";
+import user_router from './routes/userRoutes.js'
 
 const app = express();
 
@@ -31,6 +30,7 @@ app.use(
 mongoose.connect('mongodb://localhost:27017/bookingdb' ,{
     useUnifiedTopology: true, useNewUrlParser: true 
 })
+
 app.listen(port, () => { console.log(`App running from ${port} port`) })
 
 // connect to Atlas
@@ -45,3 +45,6 @@ app.listen(port, () => { console.log(`App running from ${port} port`) })
 //  routes
 app.use('/admin/',adminRouter)
 app.use('/admin/' , flight_router)
+app.use('/user/',user_router)
+
+

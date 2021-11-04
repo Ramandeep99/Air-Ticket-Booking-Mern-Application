@@ -131,7 +131,7 @@ export const logout_get = async (req, res) => {
     console.log(req.user.id)
     try {
         const currUser = await adminData.findOne({_id : req.user.id});
-        console.log(currUser)
+        // console.log(currUser)
         currUser.tokens = currUser.tokens.filter(currEle => {
             return currEle.token != req.token;
         })
