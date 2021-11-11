@@ -45,7 +45,7 @@ export const adminLoginGet = (req, res) => {
 
 export const adminRegisterPost = async (req, res) => {
 
-    // console.log(req.body)
+    console.log('request reached at admin register route')
 
     try {
         const password = req.body.password;
