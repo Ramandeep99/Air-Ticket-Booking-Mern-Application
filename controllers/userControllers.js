@@ -1,9 +1,13 @@
-import express from "express";
+import express, { response } from "express";
 import userData from "../models/userModel.js";
 import bcrypt from 'bcryptjs'
 import adminData from "../models/adminModel.js";
 import flightData from '../models/flightSchedule.js'
 import ticketData from "../models/ticketModel.js";
+
+// google auth
+import { OAuth2Client } from "google-auth-library";
+import e from "express";
 
 export const userController = async (req, res) => {
 
@@ -176,16 +180,40 @@ export const logout_get = async (req, res) => {
 
 export const searchflight = async (req, res) => {
     try {
-        console.log(req.body.From, req.body.To)
+        console.log(req.body.From, req.body.To, req.body.Date_)
 
-        const flights = await flightData.find({ From: req.body.From, To: req.body.To })
-        var arr = []
-        flights.forEach(async (flight) => {
+        if (req.body.Date_) {
 
-            arr.push(flight)
-        })
+            var newDate = req.body.Date_.split('-')
 
-        res.send(arr)
+            if (newDate[2][0] == '0') {
+                newDate[2] = newDate[2].slice(1, 2);
+            }
+
+            newDate = newDate[2] + '/' + newDate[1] + '/' + newDate[0]
+
+
+            const flights = await flightData.find({ From: req.body.From, To: req.body.To, Date_: newDate })
+            var arr = []
+            flights.forEach(async (flight) => {
+                // console.log(req.body.Date_)
+                // console.log(flight.Date_)
+                arr.push(flight)
+            })
+
+            res.send(arr)
+        }
+        else {
+            const flights = await flightData.find({ From: req.body.From, To: req.body.To })
+            var arr = []
+            flights.forEach(async (flight) => {
+                // console.log(req.body.Date_)
+                // console.log(flight.Date_)
+                arr.push(flight)
+            })
+
+            res.send(arr)
+        }
 
     }
     catch (error) {
@@ -258,7 +286,7 @@ export const bookingDetail = async (req, res) => {
                 firstDate.setFullYear(firstValue[2], (firstValue[1] - 1), firstValue[0]);
 
                 // to get time in format of comparison
-                var time = flight.Time.split(':')
+                var time = flight.TakeOff_Time.split(':')
                 var timeString = time[0] + ':' + time[1] + ':00'
 
                 // combination of date time
@@ -278,16 +306,75 @@ export const bookingDetail = async (req, res) => {
                 }
             }
         })
-
-
         // console.log(pastFlights)
         // console.log(upcomingFlights)
 
-        res.status(200).send({pastFlights , upcomingFlights})
+        res.status(200).send({ pastFlights, upcomingFlights })
 
     }
     catch (error) {
         console.log(error)
         res.status(500).send(error);
     }
+}
+
+const client = new OAuth2Client('253706091317-mm1rn3rcj7kdh7tfqo85jthdbt1hh6jn.apps.googleusercontent.com')
+
+
+export const userGoogleLoginPost = async (req, res) => {
+    const { tokenId } = req.body;
+    // console.log(tokenId)
+
+    client.verifyIdToken({ idToken: tokenId, audience: '253706091317-mm1rn3rcj7kdh7tfqo85jthdbt1hh6jn.apps.googleusercontent.com' }).then(response => {
+        const { email_verified, email, name } = response.payload;
+        // console.log(email , name)
+        if (email_verified) {
+            userData.findOne({ email }).exec(async (err, user) => {
+                if (err) {
+                    return res.status(400).json({
+                        error: "User doesn't exists, Please SignUp first."
+                    })
+                }
+                else {
+                    if (user) {
+
+
+                        // generating jwt at login 
+                        const token = await user.generateAuthToken();
+
+                        // storing cookies
+                        // var maxTime = 10 * 60 * 60 //  not worked because variable name for cookie must be maxAge
+                        // var maxAge = 10 * 60 *1000
+                        res.cookie("jwtoken", token, {
+                            // expires: new Date(Date.now() + maxAge),
+                            // expiresIn: maxTime*1000,
+                            httpOnly: true
+                        })
+
+                        res.status(200).json({ msg: 'USER' });
+
+                    }
+                    else {
+                        let temp_password = process.env.SECRETKEY;
+
+                        const newUser = new userData({ Name: name, email, password: temp_password });
+
+                        // console.log(newUser)
+
+                        const registered = await newUser.save();
+
+                        // generating jwt at login
+                        const token = await registered.generateAuthToken();
+
+                        res.cookie("jwtoken", token, {
+                            httpOnly: true,
+                        })
+
+                        res.status(200).json({ msg: 'USER' })
+                    }
+                }
+            })
+        }
+    })
+
 }

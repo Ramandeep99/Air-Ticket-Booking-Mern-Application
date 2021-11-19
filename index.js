@@ -1,13 +1,13 @@
 import express from "express";
 import mongoose from "mongoose";
 import cors from 'cors';
-import path from "path";
 import dotenv from 'dotenv'
-const port = process.env.PORT || 2000;
 import adminRouter from './routes/adminRoutes.js'
 import cookieParser from "cookie-parser";
 import flight_router from "./routes/flightSchedule.js";
 import user_router from './routes/userRoutes.js'
+
+const port = process.env.PORT || 2000;
 
 const app = express();
 

@@ -6,7 +6,7 @@ import flightData from '../models/flightSchedule.js'
 export const getflights = async (req, res) => {
 
     if (req.user) {
-        const flights = await flightData.find().sort({ Date_: 'asc', Time : 'asc'});
+        const flights = await flightData.find().sort({ Date_: 'asc', TakeOff_Time : 'asc'});
         var arr = []
         flights.forEach( async (flight) => {
 
@@ -18,7 +18,7 @@ export const getflights = async (req, res) => {
             firstDate.setFullYear(firstValue[2], (firstValue[1] - 1), firstValue[0]);
 
             // to get time in format of comparison
-            var time = flight.Time.split(':')
+            var time = flight.TakeOff_Time.split(':')
             var timeString = time[0] + ':' + time[1] + ':00'
 
             // combination of date time
@@ -84,8 +84,9 @@ export const editflight = async (req, res) => {
         flightDetail.From = req.body.From
         flightDetail.To = req.body.To
         flightDetail.Date_ = req.body.Date_
-        flightDetail.Time = req.body.Time
+        flightDetail.TakeOff_Time = req.body.TakeOff_Time
         flightDetail.Fare = req.body.Fare
+        flightDetail.Duration = req.body.Duration
 
 
         var newDate = flightDetail.Date_.split('-')
@@ -122,3 +123,16 @@ export const deleteflight = async (req, res) => {
     }
 }
 
+
+export const getsingleflight = async (req, res) => {
+
+    if (req.user) {
+        const flight = await flightData.findOne({_id : req.params.id})
+        
+        res.send(flight)
+       
+    }
+    else {
+        res.status(400).json({ "error": "Please Login first." })
+    }
+}
