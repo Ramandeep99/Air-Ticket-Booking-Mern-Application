@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: false }));
 
 //use cors to allow cross origin resource sharing
 app.use(
-    cors({
+    cors({  
       origin: 'http://localhost:3000',
       credentials: true,
     })
@@ -28,7 +28,7 @@ app.use(
 
 // local connection to database
 mongoose.connect('mongodb://localhost:27017/bookingdb' ,{
-    useUnifiedTopology: true, useNewUrlParser: true 
+    useUnifiedTopology: true, useNewUrlParser: true       
 })
 
 app.listen(port, () => { console.log(`App running from ${port} port`) })

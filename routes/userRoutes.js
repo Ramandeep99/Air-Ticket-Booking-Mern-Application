@@ -1,5 +1,5 @@
 import express from "express";
-import {  userRegisterGet , userRegisterPost ,userLoginPost, userController ,logout_get , searchflight , bookflight ,payment , bookingDetail , userGoogleLoginPost } from "../controllers/userControllers.js";
+import {  userRegisterGet , userRegisterPost ,userLoginPost, userController ,logout_get , searchflight , bookflight ,payment , bookingDetail , userGoogleLoginPost , userName } from "../controllers/userControllers.js";
 import currentUser from '../middleware/userVerification.js'
 
 const user_router = express();
@@ -32,6 +32,9 @@ user_router.get("/bookingDetail/:id" ,currentUser, bookingDetail);
 
 // google login
 user_router.post('/googlelogin' , userGoogleLoginPost);
+
+// username
+user_router.get("/userName/:id" ,currentUser, userName);
 
 export default user_router;
 

@@ -136,7 +136,7 @@ export const userLoginPost = async (req, res) => {
                         httpOnly: true
                     })
 
-                    res.status(200).json({ msg: 'USER' });
+                    res.status(200).json({ msg: 'USER' , userId:  userData_._id });
 
                 }
                 else {
@@ -338,7 +338,6 @@ export const userGoogleLoginPost = async (req, res) => {
                 else {
                     if (user) {
 
-
                         // generating jwt at login 
                         const token = await user.generateAuthToken();
 
@@ -350,8 +349,9 @@ export const userGoogleLoginPost = async (req, res) => {
                             // expiresIn: maxTime*1000,
                             httpOnly: true
                         })
-
-                        res.status(200).json({ msg: 'USER' });
+                        console.log(user.Name)
+                        // res.status(200).json({ msg: 'USER' });
+                        res.status(200).json({ msg: 'USER' , userId:  user._id });
 
                     }
                     else {
@@ -370,7 +370,8 @@ export const userGoogleLoginPost = async (req, res) => {
                             httpOnly: true,
                         })
 
-                        res.status(200).json({ msg: 'USER' })
+                        // res.status(200).json({ msg: 'USER' })
+                        res.status(200).json({ msg: 'USER' , userId:  newUser._id });
                     }
                 }
             })
@@ -378,3 +379,12 @@ export const userGoogleLoginPost = async (req, res) => {
     })
 
 }
+
+
+export const userName = async (req , res) =>{
+    console.log( req.params.id)
+    const user = await userData.findOne({_id: req.params.id})
+    console.log(user.Name)
+    res.status(200).json({user : user.Name})
+}
+
