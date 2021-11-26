@@ -4,10 +4,20 @@ import bcrypt from 'bcryptjs'
 import adminData from "../models/adminModel.js";
 import flightData from '../models/flightSchedule.js'
 import ticketData from "../models/ticketModel.js";
+import nodemailer from 'nodemailer';
+import sendGridTransport from 'nodemailer-sendgrid-transport';
 
 // google auth
 import { OAuth2Client } from "google-auth-library";
 import e from "express";
+
+
+const transporter = nodemailer.createTransport(sendGridTransport({
+    auth : {
+        api_key : "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"
+    }
+}))
+
 
 export const userController = async (req, res) => {
 
@@ -58,25 +68,40 @@ export const userRegisterPost = async (req, res) => {
         const password = req.body.password;
         const confirm_password = req.body.confirm_password;
 
-        // console.log(password , confirm_password)
-        if (password === confirm_password) {
+        const check_email = await adminData.findOne({ email: req.body.email });
 
-            const newUser = new userData(req.body);
-
-            // console.log(newUser)
-            const registered = await newUser.save();
-
-            // generating jwt at login
-            const token = await registered.generateAuthToken();
-
-            res.cookie("jwtoken", token, {
-                httpOnly: true,
-            })
-
-            res.status(201).json({ registered: registered._id })
+        if (check_email) {
+            res.status(404).json({ message: 'Email id already registered' })
         }
+
         else {
-            res.status(404).json({ 'error': 'Enter same confirm password' })
+            // console.log(password , confirm_password)
+            if (password === confirm_password) {
+
+                const newUser = new userData(req.body);
+
+                console.log(newUser)
+                const registered = await newUser.save();
+
+                // generating jwt at login
+                const token = await registered.generateAuthToken();
+
+                res.cookie("jwtoken", token, {
+                    httpOnly: true,
+                })
+                
+                await transporter.sendMail({
+                    to: newUser.email,
+                    from: 'kambojji785@gmail.com',
+                    subject: "Signup Successful.",
+                    html : "<h1> Welcome To AirFare <h1/>"
+                })
+                console.log('email sent')
+                res.status(200).json({ registered: registered._id })
+            }
+            else {
+                res.status(404).json({ message: 'Enter same confirm password' })
+            }
         }
     }
     catch (error) {
@@ -135,9 +160,8 @@ export const userLoginPost = async (req, res) => {
                         // expiresIn: maxTime*1000,
                         httpOnly: true
                     })
-
-                    res.status(200).json({ msg: 'USER' , userId:  userData_._id });
-
+                    // console.log(userData_.Name)
+                    res.status(200).json({ msg: 'USER', userId: userData_._id, userName: userData_.Name });
                 }
                 else {
                     res.status(400).json({ "password": "Invalid password" });
@@ -180,7 +204,7 @@ export const logout_get = async (req, res) => {
 
 export const searchflight = async (req, res) => {
     try {
-        console.log(req.body.From, req.body.To, req.body.Date_)
+        // console.log(req.body.From, req.body.To, req.body.Date_)
 
         if (req.body.Date_) {
 
@@ -351,7 +375,7 @@ export const userGoogleLoginPost = async (req, res) => {
                         })
                         console.log(user.Name)
                         // res.status(200).json({ msg: 'USER' });
-                        res.status(200).json({ msg: 'USER' , userId:  user._id });
+                        res.status(200).json({ msg: 'USER', userId: user._id });
 
                     }
                     else {
@@ -371,7 +395,7 @@ export const userGoogleLoginPost = async (req, res) => {
                         })
 
                         // res.status(200).json({ msg: 'USER' })
-                        res.status(200).json({ msg: 'USER' , userId:  newUser._id });
+                        res.status(200).json({ msg: 'USER', userId: newUser._id });
                     }
                 }
             })
@@ -381,10 +405,11 @@ export const userGoogleLoginPost = async (req, res) => {
 }
 
 
-export const userName = async (req , res) =>{
-    console.log( req.params.id)
-    const user = await userData.findOne({_id: req.params.id})
+export const userName = async (req, res) => {
+    console.log(req.params.id)
+    const user = await userData.findOne({ _id: req.params.id })
     console.log(user.Name)
-    res.status(200).json({user : user.Name})
+    res.status(200).json({ Name: user.Name , Email: user.email })
 }
 
+// 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
